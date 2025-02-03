@@ -21,12 +21,14 @@ export default function HomePage() {
 
   const handleSubscriptionClick = () => {
     if (user) {
-      // If the user is logged in, navigate to the subscription page
-      router.push("/subscription");
+      router.push("/subscription"); // Navigate to subscription page if logged in
     } else {
-      // If the user is not logged in, navigate to the sign-in page
-      router.push("/signin");
+      router.push("/signin"); // Navigate to sign-in page if not logged in
     }
+  };
+
+  const handleMenuClick = () => {
+    router.push("/menu"); // Navigate to the menu page
   };
 
   return (
@@ -42,13 +44,22 @@ export default function HomePage() {
         <p className="text-gray-600 mb-6">
           Your favorite homemade meals, delivered fresh and tasty!
         </p>
-        {/* Button for Start Subscription */}
-        <button
-          onClick={handleSubscriptionClick}
-          className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-full"
-        >
-          Start a Subscription
-        </button>
+
+        {/* Buttons for Subscription and Ordering */}
+        <div className="flex space-x-4">
+          <button
+            onClick={handleSubscriptionClick}
+            className="bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded-full"
+          >
+            Start a Subscription
+          </button>
+          <button
+            onClick={handleMenuClick}
+            className="bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-full"
+          >
+            Order from Menu
+          </button>
+        </div>
       </main>
 
       {/* Footer */}

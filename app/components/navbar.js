@@ -8,10 +8,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { auth, db } from "../utils/firebase";
 
-export default function Navbar() {
+export default function Navbar({ cart, setCart }) {
   const [user, setUser] = useState(null);
   const [admin, setAdmin] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [cartDropdownOpen, setCartDropdownOpen] = useState(false); // Cart dropdown state
   const router = useRouter();
 
   // Fetch admin or user information based on authentication state
@@ -68,7 +69,7 @@ export default function Navbar() {
   };
 
   return (
-    <header className="px-5 flex justify-between items-center">
+    <header className="px-5 flex justify-between bg-gray-100 items-center">
       <div>
         <Image
           src="/teeku-masi-logo.png"
@@ -80,6 +81,52 @@ export default function Navbar() {
         />
       </div>
       <div className="flex items-center space-x-4">
+        {/* Cart Button */}
+        <div className="relative bg-gray-900 hover:bg-gray-600 text-white py-2 px-4 rounded-full">
+          {cart.length > 0 && (
+            <button
+              onClick={() => setCartDropdownOpen(!cartDropdownOpen)}
+              className="flex items-center space-x-2"
+            >
+              <span className="">Cart</span>
+              {Array.isArray(cart) && cart.length > 0 && (
+                <span className="bg-white text-black rounded-full px-2 text-sm">
+                  {cart.length}
+                </span>
+              )}
+            </button>
+          )}
+
+          {cartDropdownOpen && cart.length > 0 && (
+            <div className="absolute right-0 mt-2 bg-white text-black shadow-md rounded-md w-48 max-w-xs p-2">
+              <h3 className="text-lg font-semibold mb-2">Your Cart</h3>
+              <ul>
+                {cart.map((item) => (
+                  <li
+                    key={item.id}
+                    className="flex justify-between items-center mt-2"
+                  >
+                    {item.name} - ${item.price}
+                    <button
+                      onClick={() =>
+                        setCart(cart.filter((i) => i.id !== item.id))
+                      }
+                      className="text-red-500 ml-4"
+                    >
+                      Remove
+                    </button>
+                  </li>
+                ))}
+              </ul>
+              <button
+                onClick={() => router.push("/checkout")}
+                className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+              >
+                Proceed to Checkout
+              </button>
+            </div>
+          )}
+        </div>
         {admin ? (
           <div className="relative">
             <button
