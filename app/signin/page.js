@@ -16,7 +16,7 @@ export default function SignInPage() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       console.log("Google sign-in successful:", result.user);
-      router.push("/subscription"); // Redirect to subscription page after successful login
+      router.push("/"); // Redirect to subscription page after successful login
     } catch (error) {
       console.error("Error during Google sign-in:", error);
     }
@@ -27,7 +27,7 @@ export default function SignInPage() {
     const unsubscribe = auth.onAuthStateChanged((user) => {
       if (user) {
         // If user is logged in, redirect to the subscription page
-        router.push("/subscription");
+        router.push("/");
       }
     });
 

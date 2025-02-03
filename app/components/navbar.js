@@ -70,7 +70,7 @@ export default function Navbar({ cart, setCart }) {
 
   return (
     <header className="px-5 flex justify-between bg-gray-100 items-center">
-      <div>
+      <div className="flex">
         <Image
           src="/teeku-masi-logo.png"
           alt="Teeku Masi Logo"
@@ -79,11 +79,14 @@ export default function Navbar({ cart, setCart }) {
           className="object-contain hover:cursor-pointer"
           onClick={() => (window.location.href = "/")}
         />
+        <p className="flex items-center justify-center ml-10 text-4xl font-bold">
+          Teeku Masi's Tiffin
+        </p>
       </div>
       <div className="flex items-center space-x-4">
         {/* Cart Button */}
-        <div className="relative bg-gray-900 hover:bg-gray-600 text-white py-2 px-4 rounded-full">
-          {cart.length > 0 && (
+        {Array.isArray(cart) && cart.length > 0 && (
+          <div className="relative bg-gray-900 hover:bg-gray-600 text-white py-2 px-4 rounded-full">
             <button
               onClick={() => setCartDropdownOpen(!cartDropdownOpen)}
               className="flex items-center space-x-2"
@@ -95,38 +98,38 @@ export default function Navbar({ cart, setCart }) {
                 </span>
               )}
             </button>
-          )}
 
-          {cartDropdownOpen && cart.length > 0 && (
-            <div className="absolute right-0 mt-2 bg-white text-black shadow-md rounded-md w-48 max-w-xs p-2">
-              <h3 className="text-lg font-semibold mb-2">Your Cart</h3>
-              <ul>
-                {cart.map((item) => (
-                  <li
-                    key={item.id}
-                    className="flex justify-between items-center mt-2"
-                  >
-                    {item.name} - ${item.price}
-                    <button
-                      onClick={() =>
-                        setCart(cart.filter((i) => i.id !== item.id))
-                      }
-                      className="text-red-500 ml-4"
+            {cartDropdownOpen && cart.length > 0 && (
+              <div className="absolute right-0 mt-2 bg-white text-black shadow-md rounded-md w-64 p-2">
+                <h3 className="text-lg font-semibold mb-2">Your Cart</h3>
+                <ul>
+                  {cart.map((item) => (
+                    <li
+                      key={item.id}
+                      className="flex justify-between items-center mt-2 border-b-2 pb-2 border-gray-500"
                     >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-              <button
-                onClick={() => router.push("/checkout")}
-                className="mt-4 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
-              >
-                Proceed to Checkout
-              </button>
-            </div>
-          )}
-        </div>
+                      {item.name} - ${item.price}
+                      <button
+                        onClick={() =>
+                          setCart(cart.filter((i) => i.id !== item.id))
+                        }
+                        className="text-white hover:bg-red-400 p-2 rounded-lg text-sm bg-red-700 ml-4"
+                      >
+                        Remove
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  onClick={() => router.push("/checkout")}
+                  className="mt-4 ml-5 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
+                >
+                  Proceed to Checkout
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         {admin ? (
           <div className="relative">
             <button
@@ -176,6 +179,12 @@ export default function Navbar({ cart, setCart }) {
                   className="block mt-2 text-center bg-blue-500 hover:bg-blue-700 text-white py-2 rounded-full text-sm"
                 >
                   My Subscriptions
+                </Link>
+                <Link
+                  href="#"
+                  className="block mt-2 text-center bg-blue-500 hover:bg-blue-700 text-white py-2 rounded-full text-sm"
+                >
+                  My Orders
                 </Link>
                 <button
                   onClick={handleLogout}

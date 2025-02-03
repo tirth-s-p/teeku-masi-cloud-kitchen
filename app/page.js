@@ -28,7 +28,11 @@ export default function HomePage() {
   };
 
   const handleMenuClick = () => {
-    router.push("/menu"); // Navigate to the menu page
+    if (user) {
+      router.push("/menu"); // Navigate to subscription page if logged in
+    } else {
+      router.push("/signin"); // Navigate to sign-in page if not logged in
+    }
   };
 
   return (
