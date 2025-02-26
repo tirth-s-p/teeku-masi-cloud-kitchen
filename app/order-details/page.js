@@ -20,18 +20,18 @@ export default function OrderDetailsPage() {
   const [userPhone, setUserPhone] = useState("");
   const [cityQuarter, setCityQuarter] = useState("");
   const [isMounted, setIsMounted] = useState(false);
-
+  var extraTiffins = "Zero";
   const router = useRouter();
 
   const calculateEndDate = (start, subscriptionType) => {
     if (!start) return "";
     let date = new Date(start);
     let businessDaysCount = 0;
-    let daysToAdd = subscriptionType === "monthly" ? 20 : 5; // 20 days for monthly, 5 days for weekly
+    let daysToAdd = subscriptionType === "monthly" ? 24 : 6; // 24 days for monthly, 6 days for weekly
 
     while (businessDaysCount < daysToAdd) {
       date.setDate(date.getDate() + 1);
-      if (date.getDay() !== 0 && date.getDay() !== 6) {
+      if (date.getDay() !== 0) {
         businessDaysCount++;
       }
     }
@@ -119,6 +119,12 @@ export default function OrderDetailsPage() {
     setUserPhone(input);
   };
 
+  if (subscriptionType === "Weekly") {
+    extraTiffins = "One";
+  } else {
+    extraTiffins = "Four";
+  }
+
   return (
     <div className="flex-row">
       <Navbar />
@@ -197,7 +203,11 @@ export default function OrderDetailsPage() {
               <div className="mb-4">
                 <p className="text-lg">
                   Estimated End Date: <strong>{endDate}</strong> with{" "}
-                  <strong>{subscriptionType === "monthly" ? "20" : "5"}</strong>{" "}
+                  <strong>
+                    {subscriptionType === "monthly"
+                      ? "20 + 4 (free)"
+                      : "5 + 1 (free)"}
+                  </strong>{" "}
                   tiffins delivered.
                 </p>
               </div>
@@ -220,6 +230,16 @@ export default function OrderDetailsPage() {
                     <strong>CAD ${price}</strong>
                   </p>
                 </div>
+                <div className="flex justify-between">
+                  <div className="flex flex-col">
+                    <p className="text-xl ">{extraTiffins} Extra Tiffin(s) :</p>
+                    <p>(promotional offer on subscriptions)</p>
+                  </div>
+                  <p className="text-xl">
+                    <strong>Free</strong>
+                  </p>
+                </div>
+
                 <div className="flex text-xl justify-between">
                   <p>Shipping:</p>
                   <p>

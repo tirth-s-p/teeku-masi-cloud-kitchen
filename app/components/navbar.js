@@ -6,14 +6,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useCart } from "../context/cartContext";
 import { auth, db } from "../utils/firebase";
 
-export default function Navbar({ cart, setCart }) {
+export default function Navbar({}) {
   const [user, setUser] = useState(null);
   const [admin, setAdmin] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [cartDropdownOpen, setCartDropdownOpen] = useState(false); // Cart dropdown state
   const router = useRouter();
+  const { cart, addToCart, removeFromCart } = useCart();
 
   // Fetch admin or user information based on authentication state
   useEffect(() => {
@@ -79,9 +81,12 @@ export default function Navbar({ cart, setCart }) {
           className="object-contain hover:cursor-pointer"
           onClick={() => (window.location.href = "/")}
         />
-        <p className="flex items-center justify-center ml-10 text-4xl font-bold">
+        <a
+          href="/ "
+          className="flex items-center justify-center ml-10 text-4xl font-bold hover:text-shadow-lg"
+        >
           Teeku Masi's Tiffin
-        </p>
+        </a>
       </div>
       <div className="flex items-center space-x-4">
         {/* Cart Button */}
@@ -100,32 +105,59 @@ export default function Navbar({ cart, setCart }) {
             </button>
 
             {cartDropdownOpen && cart.length > 0 && (
-              <div className="absolute right-0 mt-2 bg-white text-black shadow-md rounded-md w-64 p-2">
-                <h3 className="text-lg font-semibold mb-2">Your Cart</h3>
-                <ul>
+              <div className="absolute right-0 mt-2 bg-white text-black shadow-lg rounded-lg w-72 p-4 border border-gray-200 transition-transform transform scale-95 hover:scale-100 z-20">
+                <h3 className="text-lg font-semibold mb-3 border-b pb-2 text-gray-800">
+                  Your Cart
+                </h3>
+                <ul className="max-h-64 overflow-y-auto">
                   {cart.map((item) => (
                     <li
                       key={item.id}
-                      className="flex justify-between items-center mt-2 border-b-2 pb-2 border-gray-500"
+                      className="flex justify-between items-center border-b py-3"
                     >
-                      {item.name} - ${item.price}
-                      <button
-                        onClick={() =>
-                          setCart(cart.filter((i) => i.id !== item.id))
-                        }
-                        className="text-white hover:bg-red-400 p-2 rounded-lg text-sm bg-red-700 ml-4"
-                      >
-                        Remove
-                      </button>
+                      <div className="flex flex-col">
+                        <span className="font-medium text-gray-800">
+                          {item.name}
+                        </span>
+                        <span className="text-sm text-gray-500">
+                          {item.quantity} x ${item.price}
+                        </span>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <button
+                          onClick={() => removeFromCart(item.id)}
+                          className="text-white bg-red-500 hover:bg-red-400 transition p-2 rounded-md text-sm"
+                        >
+                          −
+                        </button>
+                        <button
+                          onClick={() => addToCart(item)}
+                          className="text-white bg-green-500 hover:bg-green-400 transition p-2 rounded-md text-sm"
+                        >
+                          +
+                        </button>
+                      </div>
                     </li>
                   ))}
                 </ul>
-                <button
-                  onClick={() => router.push("/checkout")}
-                  className="mt-4 ml-5 bg-green-500 hover:bg-green-600 text-white py-2 px-4 rounded"
-                >
-                  Proceed to Checkout
-                </button>
+                <div className="flex flex-row justify-between items-center mt-4">
+                  <span className="text-lg font-semibold text-gray-800">
+                    Total: $
+                    {cart
+                      .reduce(
+                        (total, item) => total + item.price * item.quantity,
+                        0
+                      )
+                      .toFixed(2)}
+                  </span>
+
+                  <button
+                    onClick={() => router.push("/menu-checkout")}
+                    className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition"
+                  >
+                    Checkout
+                  </button>
+                </div>
               </div>
             )}
           </div>

@@ -32,7 +32,10 @@ export default function SubscriptionPage() {
     <div className="min-h-screen flex flex-col justify-between">
       <Navbar />
       <main className="flex-grow flex flex-col items-center px-6 py-10">
-        <h2 className="text-3xl font-bold mb-6">Choose Your Subscription</h2>
+        <h2 className="text-3xl font-bold mb-1">Choose Your Subscription</h2>
+        <h5 className="text-xl  mb-6">
+          Wohoo! Your saturday meal(s) are on us! 🎉
+        </h5>
 
         {/* Subscription Cards */}
         <div className="space-y-6 w-full max-w-2xl">
@@ -52,7 +55,7 @@ export default function SubscriptionPage() {
               className="hidden"
             />
             <img
-              src="teeku-masi-tiffin-image.jpeg" // Replace with actual image path
+              src="teeku-masi-tiffin-image.jpeg"
               alt="Weekly Tiffins"
               className="w-24 h-24 rounded-md object-cover mr-4"
             />
@@ -61,6 +64,9 @@ export default function SubscriptionPage() {
               <p className="text-sm text-gray-600">
                 Enjoy freshly prepared, homemade tiffins delivered to you daily.
                 Perfect for busy weekdays!
+              </p>
+              <p className="text-sm text-gray-600 font-style: italic font-bold">
+                Saturday meal is on us!
               </p>
             </div>
             <div className="text-right">
@@ -93,6 +99,9 @@ export default function SubscriptionPage() {
               <p className="text-sm text-gray-600">
                 Get a full month of delicious, home-style tiffins delivered
                 right to your door.
+              </p>
+              <p className="text-sm text-gray-600 font-style: italic font-bold">
+                Saturday meals are on us!
               </p>
             </div>
             <div className="text-right">

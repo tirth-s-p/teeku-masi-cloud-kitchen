@@ -1,5 +1,5 @@
 import localFont from "next/font/local";
-import LoadingCursor from "./components/LoadingCursor";
+import { CartProvider } from "./context/cartContext";
 import "./globals.css";
 
 const geistSans = localFont({
@@ -29,8 +29,7 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <LoadingCursor />
-        {children}
+        <CartProvider>{children}</CartProvider>
       </body>
     </html>
   );
