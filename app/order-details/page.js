@@ -20,8 +20,25 @@ export default function OrderDetailsPage() {
   const [userPhone, setUserPhone] = useState("");
   const [cityQuarter, setCityQuarter] = useState("");
   const [isMounted, setIsMounted] = useState(false);
-  var extraTiffins = "Zero";
+  const [errors, setErrors] = useState({}); // State to hold validation errors
   const router = useRouter();
+
+  // Function to validate form fields
+  const validateForm = () => {
+    const newErrors = {};
+
+    if (!userName) newErrors.userName = "Name is required";
+    if (!userPhone) newErrors.userPhone = "Phone number is required";
+    if (!addressLine1) newErrors.addressLine1 = "Address Line 1 is required";
+    if (!city) newErrors.city = "City is required";
+    if (!province) newErrors.province = "Province is required";
+    if (!zipcode) newErrors.zipcode = "Zipcode is required";
+    if (!cityQuarter) newErrors.cityQuarter = "City Quarter is required";
+    if (!startDate) newErrors.startDate = "Start Date is required";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0; // Return true if no errors
+  };
 
   const calculateEndDate = (start, subscriptionType) => {
     if (!start) return "";
@@ -38,8 +55,8 @@ export default function OrderDetailsPage() {
 
     // Format the date as yyyy-MM-dd
     const year = date.getFullYear();
-    const month = (date.getMonth() + 1).toString().padStart(2, "0"); // Adding leading zero if necessary
-    const day = date.getDate().toString().padStart(2, "0"); // Adding leading zero if necessary
+    const month = (date.getMonth() + 1).toString().padStart(2, "0");
+    const day = date.getDate().toString().padStart(2, "0");
 
     return `${year}-${month}-${day}`;
   };
@@ -68,9 +85,13 @@ export default function OrderDetailsPage() {
   }, [isMounted]);
 
   const handlePayment = async () => {
+    // Validate form before proceeding
+    const isValid = validateForm();
+    if (!isValid) return; // Stop if validation fails
+
     try {
       // Get the current user from Firebase Authentication
-      const auth = getAuth(); // Use the modular approach
+      const auth = getAuth();
       const user = auth.currentUser;
 
       if (!user) {
@@ -91,15 +112,15 @@ export default function OrderDetailsPage() {
         userName,
         userPhone,
         cityQuarter,
-        userId: user.uid, // Link the subscription to the logged-in user
+        userId: user.uid,
         timestamp: new Date(),
       };
 
-      // Add order data to Firestore collection
-      await addDoc(collection(db, "subscriptions"), orderData);
+      // Add order data to Firestore collection and get the document reference
+      const docRef = await addDoc(collection(db, "subscriptions"), orderData);
 
-      // Redirect to the order confirmation page
-      router.push("/order-confirmation");
+      // Redirect to the order confirmation page with the order ID
+      router.push(`/order-confirmation?orderId=${docRef.id}`);
     } catch (error) {
       console.error("Error adding document: ", error);
     }
@@ -119,11 +140,7 @@ export default function OrderDetailsPage() {
     setUserPhone(input);
   };
 
-  if (subscriptionType === "Weekly") {
-    extraTiffins = "One";
-  } else {
-    extraTiffins = "Four";
-  }
+  const extraTiffins = subscriptionType === "Weekly" ? "One" : "Four";
 
   return (
     <div className="flex-row">
@@ -138,46 +155,69 @@ export default function OrderDetailsPage() {
               value={userName}
               onChange={(e) => setUserName(e.target.value)}
               placeholder="Your Name"
-              className="border px-3 py-2 mb-4 w-full"
+              className="border px-3 py-2 mb-1 w-full"
             />
+            {errors.userName && (
+              <p className="text-red-500 text-sm">{errors.userName}</p>
+            )}
+
             <input
               type="tel"
               value={userPhone}
               onChange={handlePhoneChange}
               placeholder="Your Phone Number"
-              className="border px-3 py-2 mb-4 w-full"
+              className="border px-3 py-2 mb-1 w-full"
             />
-            <h3 className="text-2xl font-bold mb-4">Enter Your Address</h3>
+            {errors.userPhone && (
+              <p className="text-red-500 text-sm">{errors.userPhone}</p>
+            )}
+
+            <h3 className="text-2xl font-bold mb-1">Enter Your Address</h3>
             <input
               type="text"
               value={addressLine1}
               onChange={(e) => setAddressLine1(e.target.value)}
               placeholder="Address Line 1"
-              className="border px-3 py-2 mb-4 w-full"
+              className="border px-3 py-2 mb-1 w-full"
             />
+            {errors.addressLine1 && (
+              <p className="text-red-500 text-sm">{errors.addressLine1}</p>
+            )}
+
             <input
               type="text"
               value={city}
               onChange={(e) => setCity(e.target.value)}
               placeholder="City"
-              className="border px-3 py-2 mb-4 w-full"
+              className="border px-3 py-2 mb-1 w-full"
             />
+            {errors.city && (
+              <p className="text-red-500 text-sm">{errors.city}</p>
+            )}
+
             <input
               type="text"
               value={province}
               onChange={(e) => setProvince(e.target.value)}
               placeholder="Province"
-              className="border px-3 py-2 mb-4 w-full"
+              className="border px-3 py-2 mb-1 w-full"
             />
+            {errors.province && (
+              <p className="text-red-500 text-sm">{errors.province}</p>
+            )}
+
             <input
               type="text"
               value={zipcode}
               onChange={(e) => setZipcode(e.target.value)}
               placeholder="Zipcode"
-              className="border px-3 py-2 mb-4 w-full"
+              className="border px-3 py-2 mb-1 w-full"
             />
+            {errors.zipcode && (
+              <p className="text-red-500 text-sm">{errors.zipcode}</p>
+            )}
 
-            <div className="mb-4">
+            <div className="mb-1">
               <select
                 value={cityQuarter}
                 onChange={(e) => setCityQuarter(e.target.value)}
@@ -190,17 +230,24 @@ export default function OrderDetailsPage() {
                 <option value="SE">SE</option>
                 <option value="SW">SW</option>
               </select>
+              {errors.cityQuarter && (
+                <p className="text-red-500 text-sm">{errors.cityQuarter}</p>
+              )}
             </div>
 
-            <h3 className="text-2xl font-bold mb-4">Start Date</h3>
+            <h3 className="text-2xl font-bold mb-1">Start Date</h3>
             <input
               type="date"
               value={startDate}
               onChange={(e) => setStartDate(e.target.value)}
-              className="border px-3 py-2 mb-4 w-full"
+              className="border px-3 py-2 mb-1 w-full"
             />
+            {errors.startDate && (
+              <p className="text-red-500 text-sm">{errors.startDate}</p>
+            )}
+
             {startDate && (
-              <div className="mb-4">
+              <div className="mb-1">
                 <p className="text-lg">
                   Estimated End Date: <strong>{endDate}</strong> with{" "}
                   <strong>
@@ -212,11 +259,12 @@ export default function OrderDetailsPage() {
                 </p>
               </div>
             )}
+
             <textarea
               value={mealPreferences}
               onChange={(e) => setMealPreferences(e.target.value)}
-              placeholder="Specify meal preferences"
-              className="border px-3 py-2 mb-4 w-full"
+              placeholder="Specify meal preferences (optional)"
+              className="border px-3 py-2 mb-1 w-full"
             />
           </div>
 
@@ -261,7 +309,12 @@ export default function OrderDetailsPage() {
               </div>
               <button
                 onClick={handlePayment}
-                className="bg-green-500 hover:bg-green-600 text-white text-xl py-2 px-4 rounded-full text-center justify-center block"
+                disabled={Object.keys(errors).length > 0} // Disable if there are errors
+                className={`bg-green-500 hover:bg-green-600 text-white text-xl py-2 px-4 rounded-full text-center justify-center block ${
+                  Object.keys(errors).length > 0
+                    ? "opacity-50 cursor-not-allowed"
+                    : ""
+                }`}
               >
                 Pay Now
               </button>

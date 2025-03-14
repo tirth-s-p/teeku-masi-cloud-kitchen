@@ -17,9 +17,7 @@ export default function UpdateMenuPage() {
   const [menuItemsByCategory, setMenuItemsByCategory] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [updatingItemId, setUpdatingItemId] = useState(null);
-  const [deletingItemId, setDeletingItemId] = useState(null);
-  const [blinkItemId, setBlinkItemId] = useState(null);
+  const [showSuccessPopup, setShowSuccessPopup] = useState(false);
   const router = useRouter();
 
   const categoryOrder = [
@@ -78,13 +76,26 @@ export default function UpdateMenuPage() {
   }, []);
 
   const handleUpdateItemWithTransition = async (item, category) => {
-    setUpdatingItemId(item.id);
-    handleUpdateItem(item, category);
-    setUpdatingItemId(null);
+    try {
+      await handleUpdateItem(item, category);
+    } catch (error) {
+      console.error(
+        "Error in handleUpdateItemWithTransition:",
+        error?.message || error
+      );
+      setError("Failed to update item. Please check the console for details.");
+    }
   };
 
   const handleUpdateItem = async (item, category) => {
     try {
+      // Validate inputs
+      if (!item.name || !item.description || !item.price) {
+        setError("Name, description, and price are required.");
+        return;
+      }
+
+      // Update Firestore
       const itemRef = doc(db, "menuItems", category, "items", item.id);
       await updateDoc(itemRef, {
         name: item.name,
@@ -92,6 +103,7 @@ export default function UpdateMenuPage() {
         price: parseFloat(item.price),
       });
 
+      // If the ID is being updated, create a new document and delete the old one
       if (item.id !== item.newId) {
         const newItemRef = doc(db, "menuItems", category, "items", item.newId);
         await setDoc(newItemRef, {
@@ -102,31 +114,39 @@ export default function UpdateMenuPage() {
         await deleteDoc(itemRef);
       }
 
-      window.location.reload();
-
+      // Update state
       setMenuItemsByCategory((prevItems) => {
-        if (!prevItems[category]) {
+        const updatedItems = { ...prevItems };
+
+        // Ensure the category exists
+        if (!updatedItems[category]) {
           console.error(`Category ${category} not found in prevItems`);
           return prevItems;
         }
 
-        return {
-          ...prevItems,
-          [category]: prevItems[category].map((i) =>
-            i.id === item.id ? { ...i, ...item, id: item.newId || i.id } : i
-          ),
-        };
+        // Update the item in the category
+        updatedItems[category] = updatedItems[category].map((i) =>
+          i.id === item.id ? { ...i, ...item, id: item.newId || i.id } : i
+        );
+
+        return updatedItems;
       });
+
+      // Show success popup
+      setShowSuccessPopup(true);
+
+      // Hide the popup and reload the page after 2.5 seconds
+      setTimeout(() => {
+        setShowSuccessPopup(false);
+        window.location.reload();
+      }, 2500);
     } catch (error) {
-      console.error("Error updating item:", error);
-      setError("Failed to update item.");
+      console.error("Error updating item:", error?.message || error);
+      setError("Failed to update item. Please check the console for details.");
     }
   };
 
   const handleDeleteItem = async (item, category) => {
-    setDeletingItemId(item.id);
-    setBlinkItemId(item.id);
-
     try {
       const itemRef = doc(db, "menuItems", category, "items", item.id);
       await deleteDoc(itemRef);
@@ -134,8 +154,8 @@ export default function UpdateMenuPage() {
       setMenuItemsByCategory((prevItems) => {
         const updatedItems = { ...prevItems };
         if (updatedItems[category]) {
-          updatedItems[category] = updatedItems[category].map((i) =>
-            i.id === item.id ? { ...i, ...item, id: item.newId || i.id } : i
+          updatedItems[category] = updatedItems[category].filter(
+            (i) => i.id !== item.id
           );
         }
         return updatedItems;
@@ -154,13 +174,24 @@ export default function UpdateMenuPage() {
     router.push("/admin-dashboard");
   };
 
+  const SuccessPopup = () => {
+    return (
+      <div className="fixed top-0 left-0 w-full h-full flex items-center justify-center bg-black bg-opacity-50 z-50">
+        <div className="bg-white p-6 rounded-lg shadow-lg">
+          <p className="text-green-600 text-xl font-semibold">
+            Item updated successfully!
+          </p>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow container mx-auto p-6">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold">Update Menu</h1>
-          {/* Admin Dashboard Button */}
           <button
             onClick={goToAdminDashboard}
             className="bg-gray-900 hover:bg-gray-600 text-white py-2 px-4 rounded"
@@ -278,33 +309,17 @@ export default function UpdateMenuPage() {
                           <td className="py-2 px-4">
                             <div className="flex space-x-2 justify-center">
                               <button
-                                onClick={() =>
-                                  handleUpdateItemWithTransition(item, category)
-                                }
-                                className={`bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded transition ${
-                                  updatingItemId === item.id
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                                }`}
-                                disabled={updatingItemId === item.id}
+                                onClick={() => handleUpdateItem(item, category)}
+                                className="bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded"
                               >
-                                {updatingItemId === item.id
-                                  ? "Updating..."
-                                  : "Update"}
+                                Update
                               </button>
 
                               <button
                                 onClick={() => handleDeleteItem(item, category)}
-                                className={`bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded transition ${
-                                  deletingItemId === item.id
-                                    ? "opacity-50 cursor-not-allowed"
-                                    : ""
-                                }`}
-                                disabled={deletingItemId === item.id}
+                                className="bg-red-600 hover:bg-red-700 text-white py-2 px-4 rounded"
                               >
-                                {deletingItemId === item.id
-                                  ? "Deleting..."
-                                  : "Delete"}
+                                Delete
                               </button>
                             </div>
                           </td>
@@ -318,6 +333,7 @@ export default function UpdateMenuPage() {
             return null;
           })
         )}
+        {showSuccessPopup && <SuccessPopup />}
       </main>
       <Footer />
     </div>
