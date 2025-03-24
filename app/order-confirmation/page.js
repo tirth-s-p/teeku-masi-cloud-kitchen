@@ -1,12 +1,20 @@
 "use client";
 import { doc, getDoc } from "firebase/firestore";
 import { useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Footer from "../components/footer";
 import Navbar from "../components/navbar";
 import { db } from "../utils/firebase"; // Import the Firestore instance
 
-export default function OrderConfirmation() {
+export default function OrderConfirmationPage() {
+  return (
+    <Suspense fallback={<p>Loading...</p>}>
+      <OrderConfirmation />
+    </Suspense>
+  );
+}
+
+function OrderConfirmation() {
   const [order, setOrder] = useState(null);
   const searchParams = useSearchParams();
   const orderId = searchParams.get("orderId"); // Get the orderId from the query parameter
